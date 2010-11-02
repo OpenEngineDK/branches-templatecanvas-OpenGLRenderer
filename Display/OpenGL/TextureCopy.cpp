@@ -94,6 +94,8 @@ TextureCopy::~TextureCopy() {
 }
     
 void TextureCopy::Init(const unsigned int width, const unsigned int height) {
+    ctex->width = width;
+    ctex->height = height;
     glGenTextures(1, &ctex->id);
     CHECK_FOR_GL_ERROR();
     glBindTexture(GL_TEXTURE_2D, ctex->id);
