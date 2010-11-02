@@ -12,41 +12,93 @@
 
 #include <Display/ICanvas.h>
 #include <Display/OpenGL/SplitScreenCanvas.h>
-#include <Display/OpenGL/TextureCanvasBase.h>
 #include <Display/OpenGL/RenderCanvas.h>
+#include <Display/IRenderCanvas.h>
+#include <Display/StereoCamera.h>
+#include <Display/ViewingVolume.h>
 
 namespace OpenEngine {
-    namespace Display {
-        class StereoCamera;
-        class IViewingVolume;
-    }
 namespace Display {
-    namespace OpenGL {
+namespace OpenGL {
 
+template <class Backend>
 class SplitStereoCanvas : public IRenderCanvas {
 private:
     IViewingVolume* dummyCam;
     StereoCamera* stereoCam;
-    RenderCanvas left, right;
-    SplitScreenCanvas split;
+    RenderCanvas<Backend> left, right;
+    SplitScreenCanvas<Backend> split;
 public:
-    SplitStereoCanvas();
-    virtual ~SplitStereoCanvas();
+    SplitStereoCanvas()
+        : IRenderCanvas()
+        , dummyCam(new ViewingVolume())
+        , stereoCam(new StereoCamera(*dummyCam))
+        , split(SplitScreenCanvas<Backend>(left, right))
+    {}
 
-    void Handle(Display::InitializeEventArg arg);
-    void Handle(Display::ProcessEventArg arg);
-    void Handle(Display::ResizeEventArg arg);
-    void Handle(Display::DeinitializeEventArg arg);
+    virtual ~SplitStereoCanvas() {
+        delete stereoCam;
+        delete dummyCam;
+    }
 
-    unsigned int GetWidth() const;
-    unsigned int GetHeight() const;
-    void SetWidth(const unsigned int width);
-    void SetHeight(const unsigned int height);
-    ITexture2DPtr GetTexture();
+    void Handle(Display::InitializeEventArg arg) {
+        ((IListener<Display::InitializeEventArg>&)split).Handle(arg);
+    }
 
-    void SetRenderer(IRenderer* renderer);
-    void SetViewingVolume(IViewingVolume* vv);
-    void SetScene(ISceneNode* scene);
+    void Handle(Display::ProcessEventArg arg) {
+        stereoCam->SignalRendering(arg.approx);
+        ((IListener<Display::ProcessEventArg>&)split).Handle(arg);
+    }
+    
+    void Handle(Display::ResizeEventArg arg) {
+        ((IListener<Display::ResizeEventArg>&)split).Handle(arg);
+    }
+
+    void Handle(Display::DeinitializeEventArg arg) {
+        ((IListener<Display::DeinitializeEventArg>&)split)
+            .Handle(Display::DeinitializeEventArg(arg));
+    }
+
+    unsigned int GetWidth() const {
+        return split.GetWidth();
+    }
+    
+    unsigned int GetHeight() const {
+        return split.GetHeight();
+    }
+
+    void SetWidth(const unsigned int width) {
+        split.SetWidth(width);
+    }
+
+    void SetHeight(const unsigned int height) {
+        split.SetHeight(height);
+    }
+    
+    ITexture2DPtr GetTexture() {
+        return split.GetTexture();
+    }
+
+    void SetRenderer(IRenderer* renderer) {
+        this->renderer = renderer;
+        left.SetRenderer(renderer);
+        right.SetRenderer(renderer);
+    }
+    
+    void SetViewingVolume(IViewingVolume* vv) {
+        this->vv = vv;
+        delete stereoCam;
+        //stereoCam->SetViewingVolume(*vv);
+        stereoCam = new StereoCamera(*vv);
+        left.SetViewingVolume(stereoCam->GetLeft());
+        right.SetViewingVolume(stereoCam->GetRight());
+    }
+    
+    void SetScene(ISceneNode* scene) {
+        this->scene = scene;
+        left.SetScene(scene);
+        right.SetScene(scene);
+    }
 };
 
 } // NS OpenGL

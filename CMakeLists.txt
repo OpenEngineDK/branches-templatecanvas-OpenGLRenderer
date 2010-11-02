@@ -26,14 +26,16 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Scene/DisplayListTransformer.cpp
   Display/OpenGL/TextureCanvasBase.h
   Display/OpenGL/TextureCanvasBase.cpp
+  Display/OpenGL/TextureCopy.h
+  Display/OpenGL/TextureCopy.cpp
   Display/OpenGL/RenderCanvas.h
-  Display/OpenGL/RenderCanvas.cpp
+  # Display/OpenGL/RenderCanvas.cpp
   Display/OpenGL/ColorStereoCanvas.h
-  Display/OpenGL/ColorStereoCanvas.cpp
+  # Display/OpenGL/ColorStereoCanvas.cpp
   Display/OpenGL/SplitStereoCanvas.h
-  Display/OpenGL/SplitStereoCanvas.cpp
+  # Display/OpenGL/SplitStereoCanvas.cpp
   Display/OpenGL/SplitScreenCanvas.h
-  Display/OpenGL/SplitScreenCanvas.cpp
+  # Display/OpenGL/SplitScreenCanvas.cpp
   # Display/OpenGL/CompositeCanvas.h
   # Display/OpenGL/CompositeCanvas.cpp
 )
